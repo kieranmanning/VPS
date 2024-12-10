@@ -1,0 +1,64 @@
+- hosts: pi
+  remote_user: ansible
+  become: yes
+  roles:
+    - ansible-role-docker
+    - ansible-role-tailscale
+    - tailscale-certs
+    - ansible-role-nginx
+    - vaultwarden
+    - ansible-role-security
+  vars: 
+    security_ssh_port: 22
+    security_sudoers_passwordless: 
+      - ansible
+    security_autoupdate_enabled: true
+    security_autoupdate_reboot: false
+    security_fail2ban_enabled: true
+    dns_domain: pi4.lobster-dragon.ts.net
+
+- hosts: vps
+  remote_user: ansible
+  become: yes
+  roles:
+    - ansible-role-docker
+    - ansible-role-tailscale
+    - ansible-role-nginx
+    - vaultwarden
+    - ansible-role-certbot        
+    - ansible-role-security  
+  vars:
+    certbot_install_method: package
+    certbot_auto_renew: true
+    certbot_auto_renew_user: "root"
+    certbot_auto_renew_hour: "4"
+    certbot_auto_renew_minute: "30"
+    certbot_create_if_missing: true
+    certbot_admin_email: "{{ CERTBOT_ADMIN_EMAIL }}"
+    certbot_create_standalone_stop_services:
+      - nginx
+    certbot_certs:
+      - domains:
+        - "{{ VAULTWARDEN_DOMAIN }}"
+    vaultwarden_domain: "{{ VAULTWARDEN_DOMAIN }}"
+    security_ssh_port: 22
+    security_sudoers_passwordless: 
+      - ansible
+    security_autoupdate_enabled: true
+    security_autoupdate_reboot: false
+    security_fail2ban_enabled: true
+    nginx_vhosts:
+    - listen: "443 ssl http2"
+      server_name: "{{ VAULTWARDEN_DOMAIN }}"
+      state: "present"
+      template: "{{ nginx_vhost_template }}"
+      filename: "vaultwarden.conf"
+      extra_parameters: |
+        location / {
+          proxy_pass       http://localhost:8888;
+          proxy_set_header Host      $host;
+          proxy_set_header X-Real-IP $remote_addr;
+        }
+
+        ssl_certificate /etc/letsencrypt/live/{{ VAULTWARDEN_DOMAIN }}/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/{{ VAULTWARDEN_DOMAIN }}/privkey.pem;

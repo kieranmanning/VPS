@@ -1,0 +1,5 @@
+- hosts: vaultwarden
+  user: root
+  roles:
+    - bootstrap-ansible
+    - ansible-role-repo-epel

@@ -1,0 +1,7 @@
+---
+debug_enabled_default: false
+default_shell: /bin/bash
+ansible_user_name: ansible
+ansible_user_id: 1000
+ansible_group_name: ansible
+ansible_group_id: 1000

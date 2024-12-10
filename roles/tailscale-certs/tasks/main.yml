@@ -1,0 +1,6 @@
+- name: generate tailscale certs
+  command: > 
+    tailscale cert
+    --cert-file /etc/ssl/certs/{{ dns_domain }}.crt 
+    --key-file /etc/ssl/private/{{ dns_domain }}.key
+    {{ dns_domain }} 

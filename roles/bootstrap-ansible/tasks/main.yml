@@ -1,0 +1,29 @@
+
+- name: Add group | create primary group before adding user to group
+  group:
+    name: "{{ ansible_group_name }}"
+    state: present
+
+- name: Add users | create users, shell, home dirs
+  user:
+    name: "{{ ansible_user_name }}"
+    group: "{{ ansible_group_name }}"
+    shell: "{{ default_shell }}"
+    createhome: yes
+    system: yes
+    state: present 
+
+- name: SSH Keys | Add authorized key for ssh key authentication
+  authorized_key:
+    user: "{{ ansible_user_name }}"
+    key: "{{ lookup('file', 'id_rsa.pub') }}"
+    exclusive: yes
+    state: present
+
+- name: Sudo | add to sudoers file and validate
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    line: '{{ ansible_user_name }} ALL=(ALL) NOPASSWD: ALL '
+    validate: 'visudo -cf %s'
+
