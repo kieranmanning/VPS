@@ -23,7 +23,7 @@
   loop: 
     - "{{ vaultwarden_base_path }}"
     - "{{ vaultwarden_data_path }}"
-    - "{{ vaultwarden_backup_path }}"
+    - "{{ vaultwarden_backup_path }}"    
 
 - name: Ensure vaultwarden container running
   docker_container:
@@ -36,6 +36,26 @@
      - "{{ vaultwarden_port }}"
     volumes:
      - "{{ vaultwarden_data_path }}:/data"
+    env:
+      YUBICO_CLIENT_ID: "{{ VAULTWARDEN_YUBICO_CLIENT_ID }}"
+      YUBICO_SECRET_KEY: "{{ VAULTWARDEN_YUBICO_SECRET_KEY }}"
+
+- name: drop vaultwarden nginx server config
+  ansible.builtin.template:
+    src: "vaultwarden-nginx.j2"
+    dest: "/etc/nginx/conf.d/vaultwarden.conf"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "0744"
+  notify: reload nginx
+
+- name: ensure postfix installed for alerts
+  package:
+    name: postfix
+
+- name: ensure mail package installed for alerts
+  package:
+    name: "{{ 'mailutils' if ansible_distribution == 'Debian' else 's-nail' }}"
 
 - name: drop script that creats daily backup of vaultwarden
   ansible.builtin.template:
