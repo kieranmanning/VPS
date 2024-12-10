@@ -1,0 +1,6 @@
+# Install our various referenced roles
+- src: geerlingguy.nginx
+- src: geerlingguy.certbot
+- src: geerlingguy.docker
+- src: geerlingguy.security
+- src: artis3n.tailscale
