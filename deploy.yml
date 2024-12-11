@@ -3,9 +3,9 @@
   become: yes
   roles:
     - geerlingguy.docker
-    # - artis3n.tailscale    
-    - geerlingguy.nginx    
-    - pi-tailscale-certs
+    - artis3n.tailscale   
+    - pi-tailscale-certs     
+    - geerlingguy.nginx   
     - vaultwarden
     - geerlingguy.security
   vars: 
@@ -25,13 +25,14 @@
   become: yes
   roles:
     - geerlingguy.docker
-    # - artis3n.tailscale 
+    - artis3n.tailscale 
     - geerlingguy.nginx
     - vaultwarden
     - geerlingguy.certbot        
     - geerlingguy.security  
   vars:
     tailscale_authkey: "{{ TAILSCALE_AUTH_KEY }}"
+    tailscale_up_skip: true # temporarily paused due to exit node configuration issues
     certbot_install_method: package
     certbot_auto_renew: true
     certbot_auto_renew_user: "root"
