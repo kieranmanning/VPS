@@ -5,5 +5,5 @@ vaultwarden_data_path: "{{ vaultwarden_base_path }}/data"
 vaultwarden_backup_path: "{{ vaultwarden_base_path }}/backups"
 vaultwarden_image: "vaultwarden/server:latest"
 vaultwarden_port: "127.0.0.1:8888:80"
-vaultwarden_remote_backup: false
+vaultwarden_backup: false
 nginx_user: "{{ 'www-data' if ansible_distribution == 'Debian' else 'nginx' }}"

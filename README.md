@@ -8,8 +8,11 @@ to contain our secrets. This can go into group_vars/all.yml with the following k
 ```
 VAULTWARDEN_YUBICO_CLIENT_ID: <client ID>
 VAULTWARDEN_YUBICO_SECRET_KEY: <secret key>
-VAULTWARDEN_DOMAIN: <domain>
-CERTBOT_ADMIN_EMAIl: <email>
+VAULTWARDEN_PRIMARY_DOMAIN: <domain>
+VAULTWARDEN_SECONDARY_DOMAIN: <domain>
+VAULTWARDEN_REMOTE_BACKUP_HOST: <host fqdn>
+ADMIN_EMAIl: <email>
+TAILSCALE_AUTHKEY: <key>
 ```
 
 Next, we need a host file with the following format:

@@ -1,0 +1,22 @@
+- name: ensure postfix installed for alerts
+  package:
+    name: postfix
+
+- name: ensure mail package installed for alerts
+  package:
+    name: "{{ 'mailutils' if ansible_distribution == 'Debian' else 's-nail' }}"
+
+- name: drop script that creates daily backup of vaultwarden
+  ansible.builtin.template:
+    src: "vaultwarden-backup.sh"
+    dest: "/etc/cron.daily/vaultwarden-backup.sh"
+    owner: root
+    group: root
+    mode: "0744"
+
+- name: Ensure a job that runs at 6am to take daily backups of vaultwarden exists
+  ansible.builtin.cron:
+    name: "check dirs"
+    minute: "0"
+    hour: "6"
+    job: "/etc/cron.daily/vaultwarden-backup.sh"

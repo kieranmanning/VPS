@@ -1,0 +1,48 @@
+- name: Add group | create primary group before adding user to group
+  group:
+    name: "{{ vaultwarden_group_name }}"
+    state: present
+
+- name: Add users | create users, shell, home dirs
+  user:
+    name: "{{ vaultwarden_user_name }}"
+    group: "{{ vaultwarden_group_name }}"
+    createhome: no
+    system: yes
+    state: present 
+
+- name: ensure vaultwarden dirs exist
+  file:
+    path: "{{ item }}"
+    owner: "{{ vaultwarden_user_name }}"
+    group: "{{ vaultwarden_group_name }}"
+    mode: "0700"
+    state: directory
+  loop: 
+    - "{{ vaultwarden_base_path }}"
+    - "{{ vaultwarden_data_path }}"
+    - "{{ vaultwarden_backup_path }}"    
+
+- name: Ensure vaultwarden container running
+  docker_container:
+    name: vaultwarden
+    image: "{{ vaultwarden_image }}"
+    state: started
+    recreate: yes
+    restart_policy: always
+    ports:
+     - "{{ vaultwarden_port }}"
+    volumes:
+     - "{{ vaultwarden_data_path }}:/data"
+    env:
+      YUBICO_CLIENT_ID: "{{ VAULTWARDEN_YUBICO_CLIENT_ID }}"
+      YUBICO_SECRET_KEY: "{{ VAULTWARDEN_YUBICO_SECRET_KEY }}"
+
+- name: drop vaultwarden nginx server config
+  ansible.builtin.template:
+    src: "vaultwarden-nginx.j2"
+    dest: "/etc/nginx/conf.d/vaultwarden.conf"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "0744"
+  notify: reload nginx
