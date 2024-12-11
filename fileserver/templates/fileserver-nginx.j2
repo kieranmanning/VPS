@@ -1,0 +1,27 @@
+server {
+    server_name  {{ fileserver_domain }};
+    root         /var/www/files;
+
+    listen 443 ssl; # managed by Certbot
+
+
+    location / {
+        autoindex on;
+    	auth_basic           {{ fileserver_htpasswd_user }};
+        auth_basic_user_file {{ fileserver_htpasswd_file_path: }};
+    }
+
+    ssl_certificate /etc/letsencrypt/live/{{ fileserver_domain }}/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/{{ fileserver_domain }}/privkey.pem; # managed by Certbot
+
+}
+
+server {
+    if ($host = {{ fileserver_domain }}) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+    server_name  {{ fileserver_domain }};
+    listen       80;
+    return 404; # managed by Certbot
+}

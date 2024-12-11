@@ -1,0 +1,40 @@
+- name: Add group | create primary group before adding user to group
+  group:
+    name: "{{ fileserver_group_name }}"
+    state: present
+
+- name: Add users | create users, shell, home dirs
+  user:
+    name: "{{ fileserver_user_name }}"
+    group: "{{ nginx_user }}"
+    createhome: no
+    system: yes
+    state: present 
+
+- name: ensure fileserver dirs exist
+  file:
+    path: "{{ item }}"
+    owner: "{{ fileserver_user_name }}"
+    group: "{{ nginx_user }}"
+    mode: "0750"
+    state: directory
+  loop: 
+    - "{{ fileserver_base_path }}"
+
+- name: Add a user to a password file and ensure permissions are set
+  community.general.htpasswd:
+    path: /etc/nginx/conf.d/files-passwd
+    name: "{{ filserver_htpasswd_user }}"
+    password: "{{ filserver_htpasswd_password }}"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: 0640
+
+- name: drop fileserver nginx server config
+  ansible.builtin.template:
+    src: "fileserver-nginx.j2"
+    dest: "/etc/nginx/conf.d/fileserver.conf"
+    owner: "{{ nginx_user }}"
+    group: "{{ nginx_user }}"
+    mode: "0744"
+  notify: reload nginx

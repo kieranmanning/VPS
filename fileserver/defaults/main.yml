@@ -1,0 +1,5 @@
+fileserver_group_name: files
+fileserver_user_name: files 
+fileserver_base_path: /var/www/files
+fileserver_htpasswd_file_path: /etc/nginx/conf.d/files-passwd
+nginx_user: "{{ 'www-data' if ansible_distribution == 'Debian' else 'nginx' }}"
