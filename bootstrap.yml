@@ -2,4 +2,4 @@
   user: root
   roles:
     - bootstrap-ansible
-    - ansible-role-repo-epel
+    - geerlingguy.repo-epel
