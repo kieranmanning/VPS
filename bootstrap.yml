@@ -3,3 +3,8 @@
   roles:
     - bootstrap-ansible
     - geerlingguy.repo-epel
+  vars:
+    ansible_additional_groups:
+      - vaultwarden
+    ansible_group_gid: 1000
+    ansible_user_uid: 1000

@@ -3,15 +3,30 @@
   group:
     name: "{{ ansible_group_name }}"
     state: present
+    gid: "{{ ansible_group_gid }}"
 
 - name: Add users | create users, shell, home dirs
   user:
     name: "{{ ansible_user_name }}"
+    uid: "{{ ansible_user_uid }}"
     group: "{{ ansible_group_name }}"
     shell: "{{ default_shell }}"
     createhome: yes
     system: yes
     state: present 
+
+- name: set permissions for ansible user home dir
+  file:
+    state: directory
+    path: /home/ansible
+    mode: '0700'
+
+- name: add ansible user to additional groups:
+  user: 
+    name: "{{ ansible_user_name }}"
+    groups: "{{ item }}"
+    append: yes
+  loop: "{{ ansible_additional_groups }}"
 
 - name: SSH Keys | Add authorized key for ssh key authentication
   authorized_key:

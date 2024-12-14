@@ -14,7 +14,7 @@ server {
       proxy_set_header X-Real-IP $remote_addr;
     }
 
-    ssl_certificate /etc/letsencrypt/live/{{ vaultwarden_domain }}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/{{ vaultwarden_domain }}/privkey.pem;
+    ssl_certificate {{ vaultwarden_cert_path }};
+    ssl_certificate_key {{ vaultwarden_key_path }};
 
 }

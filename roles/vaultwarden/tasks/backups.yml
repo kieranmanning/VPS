@@ -19,4 +19,5 @@
     name: "check dirs"
     minute: "0"
     hour: "6"
+    user: "ansible"
     job: "/etc/cron.daily/vaultwarden-backup.sh"

@@ -1,6 +1,7 @@
 - name: generate tailscale certs
   command: > 
     tailscale cert
-    --cert-file /etc/ssl/certs/{{ dns_domain }}.crt 
-    --key-file /etc/ssl/private/{{ dns_domain }}.key
-    {{ dns_domain }} 
+    --cert-file {{vaultwarden_cert_path}}
+    --key-file {{vaultwarden_key_path}}
+    {{ vaultwarden_domain }} 
+  notify: restart nginx

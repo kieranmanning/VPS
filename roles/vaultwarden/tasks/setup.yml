@@ -2,6 +2,7 @@
   group:
     name: "{{ vaultwarden_group_name }}"
     state: present
+    # gid: "{{ vaultwarden_group_gid }}"
 
 - name: Add users | create users, shell, home dirs
   user:
@@ -10,13 +11,20 @@
     createhome: no
     system: yes
     state: present 
+    # uid: "{{ vaultwarden_user_uid }}"
+
+- name: add admin user to vaultwarden group
+  user:
+    name: "{{ vaultwarden_admin_user }}"
+    groups: "{{ vaultwarden_group_name }}"
+    append: yes
 
 - name: ensure vaultwarden dirs exist
   file:
     path: "{{ item }}"
     owner: "{{ vaultwarden_user_name }}"
     group: "{{ vaultwarden_group_name }}"
-    mode: "0700"
+    mode: "0770"
     state: directory
   loop: 
     - "{{ vaultwarden_base_path }}"

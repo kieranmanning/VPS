@@ -1,31 +1,33 @@
-- hosts: pi
-  remote_user: ansible
-  become: yes
-  roles:
-    - geerlingguy.docker
-    - artis3n.tailscale   
-    - pi-tailscale-certs     
-    - geerlingguy.nginx   
-    - vaultwarden
-    - geerlingguy.security
-  vars: 
-    tailscale_authkey: "{{ TAILSCALE_AUTH_KEY }}"
-    dns_domain: "{{ VAULTWARDEN_SECONDARY_DOMAIN }}"
-    vaultwarden_domain: "{{ VAULTWARDEN_SECONDARY_DOMAIN }}"
-    vaultwarden_backup: false
-    security_ssh_port: 22
-    security_sudoers_passwordless: 
-      - ansible
-    security_autoupdate_enabled: true
-    security_autoupdate_reboot: false
-    security_fail2ban_enabled: true
+# - hosts: pi
+#   remote_user: ansible
+#   become: yes
+#   roles:
+#     - geerlingguy.docker
+#     # - artis3n.tailscale   
+#     - pi-tailscale-certs     
+#     - geerlingguy.nginx   
+#     - vaultwarden
+#     - geerlingguy.security
+#   vars: 
+#     tailscale_authkey: "{{ TAILSCALE_AUTH_KEY }}"
+#     vaultwarden_domain: "{{ VAULTWARDEN_SECONDARY_DOMAIN }}"
+#     vaultwarden_backup: false
+#     vaultwarden_cert_path: /etc/ssl/certs/{{ VAULTWARDEN_SECONDARY_DOMAIN }}.crt
+#     vaultwarden_key_path: /etc/ssl/private/{{ VAULTWARDEN_SECONDARY_DOMAIN }}.key
+#     vaultwarden_admin_user: ansible
+#     security_ssh_port: 22
+#     security_sudoers_passwordless: 
+#       - ansible
+#     security_autoupdate_enabled: true
+#     security_autoupdate_reboot: false
+#     security_fail2ban_enabled: true
 
 - hosts: vps
   remote_user: ansible
   become: yes
   roles:
     - geerlingguy.docker
-    - artis3n.tailscale 
+    # - artis3n.tailscale
     - geerlingguy.nginx
     - vaultwarden
     - geerlingguy.certbot        
@@ -48,6 +50,9 @@
     vaultwarden_domain: "{{ VAULTWARDEN_PRIMARY_DOMAIN }}"
     vaultwarden_backup: true
     vaultwarden_remote_backup_host: "{{ VAULTWARDEN_REMOTE_BACKUP_HOST }}"
+    vaultwarden_cert_path: /etc/letsencrypt/live/{{ VAULTWARDEN_PRIMARY_DOMAIN }}/fullchain.pem;
+    vaultwarden_key_path: /etc/letsencrypt/live/{{ VAULTWARDEN_PRIMARY_DOMAIN }}/privkey.pem;
+    vaultwarden_admin_user: ansible
     security_ssh_port: 22
     security_sudoers_passwordless: 
       - ansible

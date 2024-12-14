@@ -37,6 +37,10 @@ Lastly, for convenience it helps to create a password file for our vault secret 
 The playbooks included in this repo assume that there is an ansible sudo use present to run sudo commands. 
 This user can be setup by running the ```bootstrap.yml``` playbook first. 
 
+## Additional steps
+Currently, remote backups require a .ssh/config file and an ssh key under the ansible user
+to allow the primary host to ssh/rsync to the secondary.
+
 ## Running the playbooks
 Assuming the above prerequisites have been met, the playbooks can be run in check mode as follows:
 
