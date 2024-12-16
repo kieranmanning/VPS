@@ -8,16 +8,16 @@
 
 - name: drop script that creates daily backup of vaultwarden
   ansible.builtin.template:
-    src: "vaultwarden-backup.sh"
-    dest: "/etc/cron.daily/vaultwarden-backup.sh"
+    src: "vaultwarden-backup.j2"
+    dest: "/etc/cron.hourly/vaultwarden-backup"
     owner: root
     group: root
     mode: "0744"
 
-- name: Ensure a job that runs at 6am to take daily backups of vaultwarden exists
-  ansible.builtin.cron:
-    name: "check dirs"
-    minute: "0"
-    hour: "6"
-    user: "ansible"
-    job: "/etc/cron.daily/vaultwarden-backup.sh"
+# - name: Ensure a job that runs at 6am to take daily backups of vaultwarden exists
+#   ansible.builtin.cron:
+#     name: "check dirs"
+#     minute: "0"
+#     hour: "6"
+#     user: "ansible"
+#     job: "/etc/cron.daily/vaultwarden-backup"
