@@ -14,5 +14,5 @@ sudo -u ansible rsync -avp --omit-dir-times "{{ vaultwarden_base_path }}/data" "
 
 # Then sync running primary vaultwarden with secondary vaultwarden
 sudo -u ansible ssh ansible@{{ vaultwarden_remote_backup_host }} -t "sudo docker stop vaultwarden"
-sudo -u ansible rsync -avp --omit-dir-times {{ vaultwarden_base_path }}/data "ansible@{{ vaultwarden_remote_backup_host }}:{{ vaultwarden_base_path }}/data"
+sudo -u ansible rsync -avp --omit-dir-times {{ vaultwarden_base_path }}/data "ansible@{{ vaultwarden_remote_backup_host }}:{{ vaultwarden_base_path }}/"
 sudo -u ansible ssh ansible@{{ vaultwarden_remote_backup_host }} -t "sudo docker start vaultwarden"

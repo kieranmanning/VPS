@@ -1,0 +1,9 @@
+- name: install basic system packages
+  package:
+    name: {{ item }}
+    state: present
+  loop:
+    - git
+    - vim
+    
+  
