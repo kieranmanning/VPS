@@ -49,6 +49,7 @@
     certbot_certs:
       - domains:
         - "{{ VAULTWARDEN_PRIMARY_DOMAIN }}"
+        - kmanning.ie
     vaultwarden_domain: "{{ VAULTWARDEN_PRIMARY_DOMAIN }}"
     vaultwarden_backup: true
     vaultwarden_remote_backup_host: "{{ VAULTWARDEN_REMOTE_BACKUP_HOST }}"
@@ -61,3 +62,15 @@
     security_autoupdate_enabled: true
     security_autoupdate_reboot: false
     security_fail2ban_enabled: true
+    nginx_vhosts:
+    - listen: "443 ssl"
+      server_name: "www.kmanning.ie kmanning.ie"
+      root: "/var/www/kmanning.ie"
+      index: "index.html"
+      state: "present"
+      filename: "kmanning.ie.conf"
+      extra_parameters: |
+        ssl_certificate     /etc/letsencrypt/live/kmanning.ie/fullchain.pem;
+        ssl_certificate_key /etc/letsencrypt/live/kmanning.ie/privkey.pem;
+        ssl_protocols       TLSv1.1 TLSv1.2;
+        ssl_ciphers         HIGH:!aNULL:!MD;
