@@ -33,7 +33,6 @@
     - vaultwarden
     - geerlingguy.certbot        
     - geerlingguy.security
-    - misc-tooling  
   vars:
     tailscale_authkey: "{{ TAILSCALE_AUTH_KEY }}"
     tailscale_up_skip: true # temporarily paused due to exit node configuration issues
@@ -51,6 +50,7 @@
         - "{{ VAULTWARDEN_PRIMARY_DOMAIN }}"
         - kmanning.ie
     vaultwarden_domain: "{{ VAULTWARDEN_PRIMARY_DOMAIN }}"
+    vaultwarden_image: "vaultwarden/server:1.33.2"
     vaultwarden_backup: true
     vaultwarden_remote_backup_host: "{{ VAULTWARDEN_REMOTE_BACKUP_HOST }}"
     vaultwarden_cert_path: /etc/letsencrypt/live/{{ VAULTWARDEN_PRIMARY_DOMAIN }}/fullchain.pem;
