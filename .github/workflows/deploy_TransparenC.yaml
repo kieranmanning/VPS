@@ -1,0 +1,14 @@
+on:
+    workflow_dispatch:
+        inputs:
+            tag:
+                description: repo tag to clone and build
+                required: true
+
+jobs:
+    deploy:
+        runs-on: [ VPS ]
+        steps:
+            - name: checkout repo
+              uses: actions/checkout@v4
+        
