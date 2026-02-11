@@ -1,0 +1,75 @@
+- name: Add group | create primary group before adding user to group
+  group:
+    name: "{{ transparenc_group_name }}"
+    state: present
+
+- name: Add users | create users, shell, home dirs
+  user:
+    name: "{{ transparenc_user_name }}"
+    group: "{{ transparenc_group_name }}"
+    createhome: no
+    system: yes
+    state: present 
+
+- name: ensure transparenc dirs exist
+  file:
+    path: "{{ item }}"
+    owner: "{{ transparenc_user_name }}"
+    group: "{{ transparenc_group_name }}"
+    mode: "0750"
+    state: directory
+  loop: 
+    - "{{ transparenc_base_path }}"
+
+- name: drop transparenc nginx server config
+  ansible.builtin.template:
+    src: "transparenc-nginx.j2"
+    dest: "/etc/nginx/conf.d/transparenc.conf"
+    owner: "{{ transparenc_group_name }}"
+    group: "{{ transparenc_group_name }}"
+    mode: "0744"
+  notify: reload nginx
+
+- name: checkout API repo
+  become: true
+  become_user: "{{ transparenc_user_name }}"
+  ansible.builtin.git:
+    repo: "{{ transparenc_api_github_repo }}"
+    dest: "{{ transparenc_base_path }}/repo"
+    version: master
+    accept_hostkey: yes
+    force: yes
+
+- name: build Docker image
+  community.docker.docker_image:
+    build:
+      path: /opt/transparenc/repo
+    name: transparenc-api
+    tag: "{{ transparenc_github_release_version }}"
+    push: false
+    source: build
+
+- name: run API container
+  become: true
+  become_user: "{{ transparenc_user_name }}"
+  community.docker.docker_container:
+    name: transparenc-api
+    image: "transparenc-api:{{ transparenc_github_release_version }}"
+    state: started
+    pull: never
+    env_file: ~/.env
+    ports:
+      - "8000:8000"
+    command: >
+      uv run gunicorn IntercomAPIServer.wsgi:application 
+      --bind 0.0.0.0:8000 
+      --workers 3
+      --threads 2 
+      --timeout 30
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      start_interval: 10s    
