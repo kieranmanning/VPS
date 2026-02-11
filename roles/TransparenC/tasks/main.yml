@@ -63,7 +63,7 @@
     command: >
       uv run gunicorn IntercomAPIServer.wsgi:application 
       --bind 0.0.0.0:8000 
-      --workers 2 
+      --workers 3
       --threads 2 
       --timeout 30
     healthcheck:
