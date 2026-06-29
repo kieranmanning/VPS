@@ -9,6 +9,6 @@
     transparenc_api_github_repo: "{{ TRANSPARENC_API_GITHUB_REPO }}"
     transparenc_github_release_version: "{{ TRANSPARENC_GITHUB_RELEASE_VERSION }}"
     transparenc_domain: "{{ TRANSPARENC_DOMAIN }}"
-    transparenc_cert_path: /etc/letsencrypt/live/{{ TRANSPARENC_DOMAIN }}/fullchain.pem;
-    transparenc_key_path: /etc/letsencrypt/live/{{ TRANSPARENC_DOMAIN }}/privkey.pem;
+    transparenc_cert_path: /etc/letsencrypt/live/{{ TRANSPARENC_DOMAIN }}/fullchain.pem
+    transparenc_key_path: /etc/letsencrypt/live/{{ TRANSPARENC_DOMAIN }}/privkey.pem
     

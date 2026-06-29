@@ -1,6 +1,6 @@
 - name: install basic system packages
   package:
-    name: {{ item }}
+    name: "{{ item }}"
     state: present
   loop:
     - git

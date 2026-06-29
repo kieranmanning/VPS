@@ -30,46 +30,106 @@
     mode: "0744"
   notify: reload nginx
 
-- name: checkout API repo
-  become: true
-  become_user: "{{ transparenc_user_name }}"
-  ansible.builtin.git:
-    repo: "{{ transparenc_api_github_repo }}"
-    dest: "{{ transparenc_base_path }}/repo"
-    version: master
-    accept_hostkey: yes
-    force: yes
+- name: Log in to private registry (if required)
+  docker_login:
+    registry_url: docker.kmanning.ie:5000
+    username: "{{ DOCKER_REGISTRY_USER }}"
+    password: "{{ DOCKER_REGISTRY_PASSWORD }}"
 
-- name: build Docker image
-  community.docker.docker_image:
-    build:
-      path: /opt/transparenc/repo
-    name: transparenc-api
-    tag: "{{ transparenc_github_release_version }}"
-    push: false
-    source: build
+- name: Create transparenc network
+  docker_network:
+    name: transparenc
+    driver: bridge
+    state: present
 
-- name: run API container
-  become: true
-  become_user: "{{ transparenc_user_name }}"
-  community.docker.docker_container:
-    name: transparenc-api
-    image: "transparenc-api:{{ transparenc_github_release_version }}"
+- name: Create pgdata volume
+  docker_volume:
+    name: pgdata
+    state: present
+
+- name: Run postgres_db container
+  docker_container:
+    name: postgres_db
+    image: postgres:15
     state: started
-    pull: never
-    env_file: ~/.env
+    restart_policy: unless-stopped
+    env:
+      POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+      POSTGRES_DB: "{{ POSTGRES_DB }}"
+      POSTGRES_USER: "{{ POSTGRES_USER }}"
+      POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+    volumes:
+      - "pgdata:/var/lib/postgresql/data"
+    networks:
+      - name: transparenc
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ POSTGRES_USER }}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+  register: postgres_container
+
+- name: Wait for postgres to be healthy
+  docker_container_info:
+    name: postgres_db
+  register: postgres_info
+  until: postgres_info.container.State.Health.Status == "healthy"
+  retries: 20
+  delay: 5
+
+- name: Run backend container
+  docker_container:
+    name: backend
+    image: docker.kmanning.ie:5000/intercom-api:latest
+    pull: yes
+    state: started
+    restart_policy: unless-stopped
+    env:
+      AWS_ACCESS_KEY_ID: "{{ AWS_ACCESS_KEY_ID }}"
+      AWS_SECRET_ACCESS_KEY: "{{ AWS_SECRET_ACCESS_KEY }}"
+      AWS_ACCOUNT_ID: "{{ AWS_ACCOUNT_ID }}"
+      COGNITO_DOMAIN: "{{ COGNITO_DOMAIN }}"
+      COGNITO_USER_POOL_ID: "{{ COGNITO_USER_POOL_ID }}"
+      COGNITO_APP_CLIENT_ID: "{{ COGNITO_APP_CLIENT_ID }}"
+      COGNITO_APP_CLIENT_SECRET: "{{ COGNITO_APP_CLIENT_SECRET }}"
+      DJANGO_SUPERUSER_PASSWORD: "{{ DJANGO_SUPERUSER_PASSWORD }}"
+      DJANGO_SUPERUSER_EMAIL: "{{ DJANGO_SUPERUSER_EMAIL }}"
+      DJANGO_SECRET_KEY: "{{ DJANGO_SECRET_KEY }}"
+      DJANGO_ALLOWED_HOSTS: "{{ DJANGO_ALLOWED_HOSTS }}"
+      DJANGO_CSRF_TRUSTED_ORIGINS: "{{ DJANGO_CSRF_TRUSTED_ORIGINS }}"
+      POSTGRES_DB: "{{ POSTGRES_DB }}"
+      POSTGRES_USER: "{{ POSTGRES_USER }}"
+      POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
+      POSTGRES_HOST: "{{ POSTGRES_HOST }}"
+      SITE_URL: "https://{{ TRANSPARENC_DOMAIN }}"
     ports:
       - "8000:8000"
-    command: >
-      uv run gunicorn IntercomAPIServer.wsgi:application 
-      --bind 0.0.0.0:8000 
-      --workers 3
-      --threads 2 
-      --timeout 30
+    networks:
+      - name: transparenc
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8000"]
+      test: ["CMD-SHELL", "wget -qO- http://0.0.0.0:8000/api/v1/health/ || exit 1"]
       interval: 10s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
-      start_interval: 10s    
+      timeout: 5s
+      retries: 10
+  register: backend_container
+
+- name: Wait for backend to be healthy
+  docker_container_info:
+    name: backend
+  register: backend_info
+  until: backend_info.container.State.Health.Status == "healthy"
+  retries: 20
+  delay: 5
+
+- name: Run frontend container
+  docker_container:
+    name: frontend
+    image: docker.kmanning.ie:5000/intercom-frontend:latest
+    pull: yes
+    state: started
+    restart_policy: unless-stopped
+    ports:
+      - "8080:80"
+    networks:
+      - name: transparenc
+
