@@ -2,9 +2,12 @@
   remote_user: ansible
   become: yes
   roles:
-    - geerlingguy.docker
-    - geerlingguy.nginx   
-    - TransparenC
+    - role: geerlingguy.docker
+      tags: base
+    - role: geerlingguy.nginx
+      tags: base
+    - role: TransparenC
+      tags: transparenc
   vars:
     transparenc_api_github_repo: "{{ TRANSPARENC_API_GITHUB_REPO }}"
     transparenc_github_release_version: "{{ TRANSPARENC_GITHUB_RELEASE_VERSION }}"

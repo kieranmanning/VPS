@@ -1,7 +1,13 @@
+---
 # Install our various referenced roles
-- src: geerlingguy.repo-epel
-- src: geerlingguy.nginx
-- src: geerlingguy.certbot
-- src: geerlingguy.docker
-- src: geerlingguy.security
-- src: artis3n.tailscale
+roles:
+  - src: geerlingguy.repo-epel
+  - src: geerlingguy.nginx
+  - src: geerlingguy.certbot
+  - src: geerlingguy.docker
+  - src: geerlingguy.security
+  - src: artis3n.tailscale
+
+# Modules used by our custom roles (e.g. docker_container in TransparenC)
+collections:
+  - name: community.docker

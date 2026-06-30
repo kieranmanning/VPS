@@ -1,3 +1,5 @@
 dependencies:
 - role: geerlingguy.nginx
+  tags: base
 - role: geerlingguy.docker
+  tags: base

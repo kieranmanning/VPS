@@ -8,7 +8,34 @@ on:
 jobs:
     deploy:
         runs-on: [ VPS ]
+        env:
+            ANSIBLE_HOST_KEY_CHECKING: 'False'
         steps:
             - name: checkout repo
               uses: actions/checkout@v4
-        
+
+            - name: install ansible role/collection dependencies
+              run: |
+                  ansible-galaxy install -r requirements.yml
+                  ansible-galaxy collection install -r requirements.yml
+
+            - name: write deploy credentials
+              run: |
+                  umask 077
+                  mkdir -p group_vars
+                  printf '%s' "${{ secrets.ANSIBLE_INVENTORY }}" > hosts
+                  printf '%s' "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > vault_password_file
+                  printf '%s' "${{ secrets.ANSIBLE_VAULT_VARS }}" > group_vars/all.yml
+                  printf '%s' "${{ secrets.DEPLOY_SSH_KEY }}" > id_rsa
+                  chmod 600 id_rsa vault_password_file
+
+            - name: deploy TransparenC
+              run: |
+                  ansible-playbook -i hosts deploy_tranparenc.yml \
+                    --private-key id_rsa \
+                    --vault-password-file vault_password_file \
+                    --skip-tags base
+
+            - name: clean up deploy credentials
+              if: always()
+              run: rm -f hosts vault_password_file id_rsa group_vars/all.yml
