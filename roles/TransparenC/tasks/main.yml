@@ -77,6 +77,34 @@
   retries: 20
   delay: 5
 
+- name: Run coturn container
+  docker_container:
+    name: coturn
+    image: coturn/coturn:latest
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    command: >
+      -n
+      --log-file=stdout
+      --realm={{ TRANSPARENC_DOMAIN }}
+      --use-auth-secret
+      --static-auth-secret={{ COTURN_SECRET }}
+      --min-port=49160
+      --max-port=49200
+      --no-tls
+      --no-dtls
+    ports:
+  register: coturn_container
+
+# - name: Wait for coturn to be healthy
+#   docker_container_info:
+#     name: coturn
+#   register: coturn_info
+#   until: coturn_info.container.State.Health.Status == "healthy"
+#   retries: 20
+#   delay: 5
+
 - name: Run backend container
   docker_container:
     name: backend
@@ -102,6 +130,8 @@
       POSTGRES_PASSWORD: "{{ POSTGRES_PASSWORD }}"
       POSTGRES_HOST: "{{ POSTGRES_HOST }}"
       SITE_URL: "https://{{ TRANSPARENC_DOMAIN }}"
+      COTURN_SECRET: "{{ COTURN_SECRET }}"
+      COTURN_HOST: "{{ TRANSPARENC_DOMAIN }}"
     ports:
       - "8000:8000"
     networks:
